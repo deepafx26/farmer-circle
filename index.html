@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer Circle — Masuk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg-void: #060811;
+    --bg-panel: #0d1220;
+    --bg-card: #10162a;
+    --purple: #7c5cff;
+    --purple-dim: #4a3a9e;
+    --teal: #22d3c9;
+    --teal-dim: #1a8f88;
+    --gold: #e8b64c;
+    --text-hi: #eef1f8;
+    --text-mid: #a4acc4;
+    --text-low: #5c6480;
+    --line: rgba(255,255,255,0.07);
+    --danger: #ff6b6b;
+    --success: #22d3c9;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+    background:var(--bg-void);
+    color:var(--text-hi);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+
+  .stage{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns: 1.15fr 1fr;
+  }
+
+  @media (max-width: 920px){
+    .stage{ grid-template-columns: 1fr; }
+    .brandside{ min-height: 340px; }
+  }
+
+  /* ===================== LEFT: BRAND SIDE ===================== */
+  .brandside{
+    position:relative;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(124,92,255,0.20), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(34,211,201,0.16), transparent 50%),
+      linear-gradient(160deg, #090c17 0%, #0c0f1e 55%, #0a0e19 100%);
+    padding: 56px 60px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+    border-right:1px solid var(--line);
+  }
+
+  .brandside::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at 30% 30%, black, transparent 75%);
+    pointer-events:none;
+  }
+
+  .wordmark{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    position:relative;
+    z-index:2;
+  }
+
+  .wordmark .mark{
+    width:38px; height:38px;
+    border-radius:10px;
+    background: linear-gradient(135deg, var(--purple), var(--teal));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size:18px;
+    color:#080a12;
+    box-shadow: 0 0 24px rgba(124,92,255,0.45);
+  }
+
+  .wordmark span.name{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:0.4px;
+  }
+  .wordmark span.name b{ color:var(--teal); font-weight:700; }
+
+  .brand-hero{
+    position:relative;
+    z-index:2;
+    max-width:480px;
+    margin-top: 20px;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--teal);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px; height:1px;
+    background: var(--teal);
+    display:inline-block;
+  }
+
+  .brand-hero h1{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height:1.25;
+    letter-spacing:-0.5px;
+    color:var(--text-hi);
+  }
+  .brand-hero h1 .accent{
+    background: linear-gradient(90deg, var(--purple), var(--teal));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .brand-hero p{
+    margin-top:18px;
+    color:var(--text-mid);
+    font-size:15px;
+    line-height:1.7;
+    max-width: 420px;
+  }
+
+  /* Signature element: Fibonacci / candlestick chart */
+  .chart-wrap{
+    position:relative;
+    z-index:2;
+    margin-top:38px;
+    height:190px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background: rgba(255,255,255,0.015);
+    overflow:hidden;
+    backdrop-filter: blur(2px);
+  }
+  .chart-wrap svg{ width:100%; height:100%; display:block; }
+
+  .fib-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    fill: var(--text-low);
+  }
+
+  .modules{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:34px;
+  }
+  .modules .pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.3px;
+    color:var(--text-mid);
+    border:1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+    padding:7px 13px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .modules .pill .dot{
+    width:5px; height:5px; border-radius:50%;
+    background: var(--teal);
+    box-shadow: 0 0 6px var(--teal);
+  }
+
+  .brand-footer{
+    position:relative;
+    z-index:2;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color: var(--text-low);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-top:1px solid var(--line);
+    padding-top:18px;
+    margin-top:40px;
+  }
+
+  /* ===================== RIGHT: FORM SIDE ===================== */
+  .formside{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 40px 32px;
+    background: var(--bg-panel);
+    position:relative;
+  }
+
+  .card{
+    width:100%;
+    max-width:400px;
+    animation: rise .6s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .tabs{
+    display:flex;
+    background: var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:4px;
+    margin-bottom:30px;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:10px 0;
+    font-family:'Sora', sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text-low);
+    border-radius:9px;
+    cursor:pointer;
+    transition: all .25s ease;
+    user-select:none;
+  }
+  .tab.active{
+    background: linear-gradient(135deg, rgba(124,92,255,0.18), rgba(34,211,201,0.14));
+    color:var(--text-hi);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+
+  .card h2{
+    font-family:'Sora', sans-serif;
+    font-size:23px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .card .sub{
+    color:var(--text-mid);
+    font-size:13.5px;
+    margin-bottom:28px;
+  }
+
+  form{ display:flex; flex-direction:column; gap:16px; }
+
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--text-mid);
+    margin-bottom:7px;
+    font-weight:500;
+  }
+
+  .field .input-wrap{
+    position:relative;
+  }
+
+  .field input{
+    width:100%;
+    background: var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text-hi);
+    font-size:14px;
+    font-family:'Inter', sans-serif;
+    outline:none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .field input::placeholder{ color: #454d68; }
+  .field input:focus{
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(34,211,201,0.12);
+  }
+
+  .toggle-eye{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    color:var(--text-low);
+    font-size:12px;
+    font-family:'JetBrains Mono', monospace;
+    user-select:none;
+  }
+  .toggle-eye:hover{ color: var(--teal); }
+
+  .row-between{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12.5px;
+  }
+  .remember{
+    display:flex; align-items:center; gap:7px;
+    color:var(--text-mid);
+  }
+  .remember input{ accent-color: var(--teal); }
+
+  a.link{
+    color:var(--teal);
+    text-decoration:none;
+  }
+  a.link:hover{ text-decoration:underline; }
+
+  button.submit{
+    margin-top:6px;
+    padding:13px 0;
+    border:none;
+    border-radius:10px;
+    background: linear-gradient(135deg, var(--purple), var(--teal));
+    color:#080a12;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .2s ease;
+    box-shadow: 0 8px 24px rgba(124,92,255,0.28);
+  }
+  button.submit:hover{ transform: translateY(-1px); box-shadow: 0 10px 30px rgba(34,211,201,0.32); }
+  button.submit:active{ transform: translateY(0); }
+  button.submit:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+  .spinner{
+    width:15px; height:15px;
+    border-radius:50%;
+    border:2px solid rgba(8,10,18,0.35);
+    border-top-color:#080a12;
+    display:inline-block;
+    vertical-align:middle;
+    margin-right:8px;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .msg{
+    font-size:12.5px;
+    padding:10px 12px;
+    border-radius:9px;
+    display:none;
+    line-height:1.5;
+    font-family:'Inter', sans-serif;
+  }
+  .msg.show{ display:block; }
+  .msg.error{ background: rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:#ff9b9b; }
+  .msg.success{ background: rgba(34,211,201,0.1); border:1px solid rgba(34,211,201,0.3); color: var(--teal); }
+
+  .divider{
+    display:flex; align-items:center; gap:12px;
+    color:var(--text-low);
+    font-size:11.5px;
+    margin: 22px 0 6px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .divider::before, .divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+
+  .foot-note{
+    text-align:center;
+    margin-top:24px;
+    font-size:12.5px;
+    color:var(--text-low);
+  }
+
+  .config-warning{
+    max-width:400px;
+    margin: 0 auto 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color: var(--gold);
+    background: rgba(232,182,76,0.08);
+    border:1px solid rgba(232,182,76,0.28);
+    padding:10px 12px;
+    border-radius:9px;
+    line-height:1.6;
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ===================== LEFT: BRAND / SIGNATURE ===================== -->
+  <div class="brandside">
+    <div class="wordmark">
+      <div class="mark">F</div>
+      <span class="name">FARMER <b>CIRCLE</b></span>
+    </div>
+
+    <div class="brand-hero">
+      <div class="eyebrow">FTC Jember · Trading Command Center</div>
+      <h1>Sistem yang konsisten<br>selalu menang lawan <span class="accent">feeling yang naik-turun.</span></h1>
+      <p>Satu tempat buat jurnal trade, analisa intraday, dan review performa — biar keputusan lo based on data, bukan mood hari ini.</p>
+
+      <div class="chart-wrap">
+        <svg viewBox="0 0 480 190" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="fibFade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#7c5cff" stop-opacity="0.05"/>
+              <stop offset="100%" stop-color="#22d3c9" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+
+          <!-- fib retracement zones -->
+          <rect x="0" y="34" width="480" height="1" fill="rgba(255,255,255,0.08)"/>
+          <rect x="0" y="70" width="480" height="1" fill="rgba(232,182,76,0.25)"/>
+          <rect x="0" y="98" width="480" height="1" fill="rgba(124,92,255,0.3)"/>
+          <rect x="0" y="126" width="480" height="1" fill="rgba(232,182,76,0.25)"/>
+          <rect x="0" y="158" width="480" height="1" fill="rgba(255,255,255,0.08)"/>
+
+          <text x="452" y="31" class="fib-label">0.0</text>
+          <text x="446" y="67" class="fib-label">0.382</text>
+          <text x="446" y="95" class="fib-label">0.618</text>
+          <text x="446" y="123" class="fib-label">0.786</text>
+          <text x="452" y="155" class="fib-label">1.0</text>
+
+          <!-- candlesticks -->
+          <g id="candles" stroke-width="1.4">
+            <!-- generated via JS below for staggered draw-in -->
+          </g>
+
+          <!-- price line following structure -->
+          <path id="priceline" d="M10,150 L40,120 L70,140 L100,70 L130,95 L160,55 L190,80 L220,40 L250,65 L280,98 L310,60 L340,88 L370,52 L400,75 L430,45 L460,68"
+            fill="none" stroke="url(#fibFade)" stroke-width="0" />
+        </svg>
+      </div>
+
+      <div class="modules">
+        <div class="pill"><span class="dot"></span>Jurnal Trade</div>
+        <div class="pill"><span class="dot"></span>Analisa Intraday</div>
+        <div class="pill"><span class="dot"></span>Backtest &amp; Performance</div>
+        <div class="pill"><span class="dot"></span>Economic Calendar</div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      <span>© 2026 Farmer Trader Community</span>
+      <span>Jember · Lumajang · Probolinggo · Banyuwangi</span>
+    </div>
+  </div>
+
+  <!-- ===================== RIGHT: AUTH FORM ===================== -->
+  <div class="formside">
+    <div class="card">
+
+      <div class="config-warning" id="configWarning">
+        ⚠ SUPABASE_URL &amp; SUPABASE_ANON_KEY belum diisi. Buka file ini, cari bagian "KONFIGURASI SUPABASE" di tag &lt;script&gt; paling bawah, terus isi sesuai project Supabase lo.
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="login">Masuk</div>
+        <div class="tab" data-tab="signup">Daftar</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginPane">
+        <h2>Selamat balik, Bro 👋</h2>
+        <div class="sub">Masuk buat lanjutin sistem trading lo.</div>
+
+        <form id="loginForm">
+          <div class="field">
+            <label>Email</label>
+            <div class="input-wrap">
+              <input type="email" id="loginEmail" placeholder="nama@email.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <div class="input-wrap">
+              <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+              <span class="toggle-eye" data-target="loginPassword">SHOW</span>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <label class="remember">
+              <input type="checkbox" id="rememberMe" checked> Inget gua
+            </label>
+            <a href="#" class="link" id="forgotLink">Lupa password?</a>
+          </div>
+
+          <div class="msg" id="loginMsg"></div>
+
+          <button type="submit" class="submit" id="loginBtn">Masuk</button>
+        </form>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signupPane" style="display:none;">
+        <h2>Gabung Farmer Circle</h2>
+        <div class="sub">Bikin akun buat mulai nyatet trade lo secara sistematis.</div>
+
+        <form id="signupForm">
+          <div class="field">
+            <label>Nama</label>
+            <div class="input-wrap">
+              <input type="text" id="signupName" placeholder="Nama lengkap" required autocomplete="name">
+            </div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <div class="input-wrap">
+              <input type="email" id="signupEmail" placeholder="nama@email.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <div class="input-wrap">
+              <input type="password" id="signupPassword" placeholder="Minimal 6 karakter" required minlength="6" autocomplete="new-password">
+              <span class="toggle-eye" data-target="signupPassword">SHOW</span>
+            </div>
+          </div>
+
+          <div class="msg" id="signupMsg"></div>
+
+          <button type="submit" class="submit" id="signupBtn">Buat Akun</button>
+        </form>
+      </div>
+
+      <div class="divider">ATAU</div>
+      <div class="foot-note" id="switchNote">
+        Belum punya akun? <a href="#" class="link" id="switchToSignup">Daftar di sini</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ============================================================
+     SIGNATURE ELEMENT — draw-in candlestick + fib chart animation
+     (pure visual, no data logic)
+  ============================================================= */
+  (function(){
+    const svgNS = "http://www.w3.org/2000/svg";
+    const group = document.getElementById('candles');
+    const seed = [
+      {x:20, o:150, c:120, h:158, l:112},
+      {x:50, o:120, c:140, h:145, l:115},
+      {x:80, o:140, c:75,  h:148, l:70},
+      {x:110,o:75,  c:98,  h:100, l:68},
+      {x:140,o:98,  c:55,  h:102, l:50},
+      {x:170,o:55,  c:82,  h:88,  l:48},
+      {x:200,o:82,  c:42,  h:86,  l:38},
+      {x:230,o:42,  c:66,  h:70,  l:38},
+      {x:260,o:66,  c:100, h:104, l:60},
+      {x:290,o:100, c:62,  h:104, l:58},
+      {x:320,o:62,  c:90,  h:94,  l:58},
+      {x:350,o:90,  c:54,  h:94,  l:50},
+      {x:380,o:54,  c:78,  h:82,  l:50},
+      {x:410,o:78,  c:46,  h:82,  l:42},
+      {x:440,o:46,  c:70,  h:74,  l:40},
+      {x:462,o:70,  c:60,  h:76,  l:56}
+    ];
+    seed.forEach((k, i) => {
+      const up = k.c < k.o;
+      const color = up ? '#22d3c9' : '#7c5cff';
+      const wick = document.createElementNS(svgNS,'line');
+      wick.setAttribute('x1', k.x); wick.setAttribute('x2', k.x);
+      wick.setAttribute('y1', k.h); wick.setAttribute('y2', k.l);
+      wick.setAttribute('stroke', color);
+      wick.setAttribute('opacity','0');
+      wick.style.transition = 'opacity .4s ease';
+      group.appendChild(wick);
+
+      const body = document.createElementNS(svgNS,'rect');
+      const top = Math.min(k.o,k.c), h = Math.max(Math.abs(k.c-k.o), 2);
+      body.setAttribute('x', k.x-4); body.setAttribute('width', 8);
+      body.setAttribute('y', top); body.setAttribute('height', h);
+      body.setAttribute('fill', color);
+      body.setAttribute('opacity','0');
+      body.setAttribute('rx','1.5');
+      body.style.transition = 'opacity .4s ease';
+      group.appendChild(body);
+
+      setTimeout(() => { wick.setAttribute('opacity','0.9'); body.setAttribute('opacity','0.95'); }, 120 * i);
+    });
+  })();
+
+  /* ============================================================
+     TAB SWITCH (Masuk / Daftar)
+  ============================================================= */
+  const tabs = document.querySelectorAll('.tab');
+  const loginPane = document.getElementById('loginPane');
+  const signupPane = document.getElementById('signupPane');
+  const switchNote = document.getElementById('switchNote');
+
+  function setTab(name){
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    loginPane.style.display = name === 'login' ? 'block' : 'none';
+    signupPane.style.display = name === 'signup' ? 'block' : 'none';
+    switchNote.innerHTML = name === 'login'
+      ? 'Belum punya akun? <a href="#" class="link" id="switchToSignup">Daftar di sini</a>'
+      : 'Udah punya akun? <a href="#" class="link" id="switchToLogin">Masuk di sini</a>';
+    bindSwitchLinks();
+  }
+  tabs.forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
+
+  function bindSwitchLinks(){
+    const a1 = document.getElementById('switchToSignup');
+    const a2 = document.getElementById('switchToLogin');
+    if(a1) a1.addEventListener('click', (e) => { e.preventDefault(); setTab('signup'); });
+    if(a2) a2.addEventListener('click', (e) => { e.preventDefault(); setTab('login'); });
+  }
+  bindSwitchLinks();
+
+  /* show/hide password */
+  document.querySelectorAll('.toggle-eye').forEach(el => {
+    el.addEventListener('click', () => {
+      const target = document.getElementById(el.dataset.target);
+      const isPass = target.type === 'password';
+      target.type = isPass ? 'text' : 'password';
+      el.textContent = isPass ? 'HIDE' : 'SHOW';
+    });
+  });
+
+  /* ============================================================
+     KONFIGURASI SUPABASE
+     -----------------------------------------------------------
+     1. Buka project lo di https://supabase.com/dashboard
+     2. Masuk ke Settings > API
+     3. Copy "Project URL" ke SUPABASE_URL
+     4. Copy "anon public" key ke SUPABASE_ANON_KEY
+     5. Di Authentication > Providers, pastikan "Email" aktif
+     6. (opsional) Matiin "Confirm email" kalau mau langsung login
+        tanpa verifikasi email dulu, cocok buat testing awal
+  ============================================================= */
+  const SUPABASE_URL = "https://nsnjgfcuuesqibmpbiuv.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zbmpnZmN1dWVzcWlibXBiaXV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMzcwMTEsImV4cCI6MjA5ODcxMzAxMX0.FdsZBJUeSh1b5BmxrxXdkkQbVfKevRToO90YFl7PsnY";
+
+  let supabase = null;
+  const configWarning = document.getElementById('configWarning');
+
+  if (SUPABASE_URL.includes('YOUR-PROJECT-REF') || SUPABASE_ANON_KEY.includes('YOUR-ANON-PUBLIC-KEY')) {
+    configWarning.classList.add('show');
+    configWarning.style.display = 'block';
+  } else {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Kalau user udah pernah login & sesi masih valid, langsung redirect.
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        // TODO: ganti ke halaman dashboard lo, misal 'dashboard.html'
+        // window.location.href = 'dashboard.html';
+      }
+    });
+  }
+
+  function showMsg(el, text, type){
+    el.textContent = text;
+    el.className = 'msg show ' + type;
+  }
+
+  function setLoading(btn, loading, labelIdle){
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<span class="spinner"></span>Memproses...' : labelIdle;
+  }
+
+  /* ============================================================
+     LOGIN
+  ============================================================= */
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('loginMsg');
+    const btn = document.getElementById('loginBtn');
+    msg.className = 'msg';
+
+    if (!supabase) {
+      showMsg(msg, 'Supabase belum dikonfigurasi. Isi dulu SUPABASE_URL & SUPABASE_ANON_KEY di script paling bawah.', 'error');
+      return;
+    }
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    setLoading(btn, true, 'Masuk');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(btn, false, 'Masuk');
+
+    if (error) {
+      showMsg(msg, 'Gagal masuk: ' + error.message, 'error');
+      return;
+    }
+
+    showMsg(msg, 'Berhasil masuk. Ngalihin ke dashboard...', 'success');
+    // TODO: ganti ke halaman dashboard lo
+    // window.location.href = 'dashboard.html';
+  });
+
+  /* ============================================================
+     SIGN UP
+  ============================================================= */
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('signupMsg');
+    const btn = document.getElementById('signupBtn');
+    msg.className = 'msg';
+
+    if (!supabase) {
+      showMsg(msg, 'Supabase belum dikonfigurasi. Isi dulu SUPABASE_URL & SUPABASE_ANON_KEY di script paling bawah.', 'error');
+      return;
+    }
+
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+
+    setLoading(btn, true, 'Buat Akun');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } }
+    });
+    setLoading(btn, false, 'Buat Akun');
+
+    if (error) {
+      showMsg(msg, 'Gagal daftar: ' + error.message, 'error');
+      return;
+    }
+
+    if (data.user && !data.session) {
+      showMsg(msg, 'Akun dibuat. Cek email lo buat konfirmasi sebelum login.', 'success');
+    } else {
+      showMsg(msg, 'Akun dibuat & langsung masuk. Ngalihin...', 'success');
+      // window.location.href = 'dashboard.html';
+    }
+  });
+
+  /* ============================================================
+     LUPA PASSWORD
+  ============================================================= */
+  document.getElementById('forgotLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('loginMsg');
+    msg.className = 'msg';
+
+    if (!supabase) {
+      showMsg(msg, 'Supabase belum dikonfigurasi.', 'error');
+      return;
+    }
+
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) {
+      showMsg(msg, 'Isi email lo dulu di kolom atas, baru klik "Lupa password?" lagi.', 'error');
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      showMsg(msg, 'Gagal kirim link reset: ' + error.message, 'error');
+    } else {
+      showMsg(msg, 'Link reset password udah dikirim ke email lo.', 'success');
+    }
+  });
+</script>
+
+</body>
+</html>

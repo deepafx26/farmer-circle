@@ -23,6 +23,7 @@ const elements = {
   email: $("#email"),
   password: $("#password"),
   togglePassword: $("#toggle-password"),
+  forgotPassword: $("#forgot-password"),
   logoutButton: $("#logout-button"),
   userEmail: $("#user-email"),
   userRole: $("#user-role"),
@@ -469,6 +470,31 @@ function bindEvents() {
     const isPassword = elements.password.type === "password";
     elements.password.type = isPassword ? "text" : "password";
     elements.togglePassword.setAttribute("aria-label", isPassword ? "Sembunyikan password" : "Tampilkan password");
+    elements.togglePassword.querySelector("span").textContent = isPassword ? "HIDE" : "SHOW";
+  });
+
+  elements.forgotPassword.addEventListener("click", async () => {
+    setError(elements.loginError);
+
+    if (!supabase) {
+      setError(elements.loginError, "Supabase belum siap. Coba refresh halaman.");
+      return;
+    }
+
+    const email = elements.email.value.trim();
+    if (!email || !elements.email.validity.valid) {
+      setError(elements.loginError, "Isi email yang valid dulu untuk reset password.");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+
+    setError(
+      elements.loginError,
+      error ? "Gagal kirim link reset password." : "Link reset password sudah dikirim ke email."
+    );
   });
 
   elements.navItems.forEach((item) => {

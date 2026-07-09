@@ -1,4 +1,4 @@
-# Farmer Circle Trade Journal
+# Farmer Circle
 
 Website static SPA dengan Supabase Auth, jurnal trade per user, dan daily bias yang hanya bisa dibuat oleh role `admin` atau `mentor`.
 

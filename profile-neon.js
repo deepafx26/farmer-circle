@@ -1,0 +1,16 @@
+const d=window['document'],ftcLogo='./assets/ftc-logo.png?v=20260708-sidebar-logo-attendance',ftcFresh=Date.now();
+let ftcCache=d.createElement('script');
+ftcCache.type='module';
+ftcCache.src='./cache-guard.js?v=20260708-absensi-static-section&t='+ftcFresh;
+d.head.appendChild(ftcCache);
+let ftcMobileNav=d.createElement('script');
+ftcMobileNav.type='module';
+ftcMobileNav.src='./mobile-navigation.js?v=20260708-absensi-static-section&t='+ftcFresh;
+d.head.appendChild(ftcMobileNav);
+let ftcIcon;
+const ftcPatch=()=> (d.title='Farmer Circle',ftcIcon=d.querySelector('link[rel="icon"]')||d.head.appendChild(Object.assign(d.createElement('link'),Object.assign(Object.create(null),Object.fromEntries([['rel','icon']])))),ftcIcon.type='image/png',ftcIcon.href=ftcLogo,d.querySelectorAll('.wordmark .brand-mark,.brand-row .brand-mark').forEach(m=>(m.textContent='',m.style.padding='0',m.style.overflow='hidden',m.style.background='#fff',m.innerHTML='<img src="'+ftcLogo+'" alt="Farmer Circle" style="width:100%;height:100%;object-fit:contain;display:block">')),d.querySelectorAll('#user-avatar,#profile-avatar-preview').forEach(a=>((a.style.backgroundImage||'').includes('url(')&&!(a.style.backgroundImage||'').includes('ftc-logo.')?0:(a.textContent='',a.style.setProperty('background-image','url("'+ftcLogo+'")','important'),a.style.setProperty('background-color','#fff','important'),a.style.setProperty('background-size','contain','important'),a.style.setProperty('background-position','center','important'),a.style.setProperty('background-repeat','no-repeat','important'))));
+ftcPatch();
+setTimeout(ftcPatch,300);
+setTimeout(ftcPatch,900);
+setTimeout(ftcPatch,1800);
+setInterval(ftcPatch,1200);
